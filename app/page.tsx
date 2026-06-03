@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 export default function GolfTripSidegamesTracker() {
   const players = ['Juho', 'Niko', 'Harri', 'Aleksi', 'Miika'];
@@ -221,11 +222,21 @@ const getHoleEntry = (
           </div>
         )}
 
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold">
-            Golf Trip Sidegames Tracker
-          </h1>
-<div className="mt-4 flex gap-2 flex-wrap">
+        <div className="text-center">
+  <Image
+    src="/KS-golf.png"
+    alt="KS Golf Championship"
+    width={140}
+    height={140}
+    className="mx-auto mb-4 rounded-2xl"
+    priority
+  />
+
+  <h1 className="text-3xl md:text-4xl font-bold">
+    KS Golf Championship
+  </h1>
+
+  <div className="mt-4 flex gap-2 flex-wrap justify-center">
   {rounds.map((round) => (
     <button
       key={round}
