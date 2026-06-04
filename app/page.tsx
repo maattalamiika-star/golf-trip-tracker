@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export default function GolfTripSidegamesTracker() {
-  const players = ['Juho', 'Niko', 'Harri', 'Aleksi', 'Miika'];
+  const players = ['Juho', 'Niko', 'Harri', 'Aleksi', 'Mäde'];
   const rounds = [1, 2, 3, 4];
   const [selectedPlayer, setSelectedPlayer] = useState(players[0]);
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
-  const par3Holes = [3, 7, 12, 16];
+  
 
   const STORAGE_KEY = 'golf-trip-sidegames-data';
 
@@ -47,18 +47,17 @@ const [selectedRound, setSelectedRound] = useState(1);
   round: number,
   hole: number
 ) => {
-  const isPar3 = par3Holes.includes(hole);
+  
 
   const newEntry = {
     player,
     round,
     hole,
-    holeType: isPar3 ? 'par3' : 'normal',
-    fairwayHit: isPar3
-  ? undefined
-  : fairwayHits[
-      `${player}-${round}-${hole}`
-    ],
+    holeType: 'normal',
+    fairwayHit:
+  fairwayHits[
+    `${player}-${round}-${hole}`
+  ] ?? false,
     bunkerShots:
   bunkerCounts[
     `${player}-${round}-${hole}`
@@ -107,6 +106,18 @@ setCurrentHoles((prev) => ({
 };
 
   const resetAllData = () => {
+    if (selectedPlayer !== 'Mäde') {
+  alert('Only Mäde can reset data');
+  return;
+}
+  const confirmation = prompt(
+    'Type RESET to delete all data'
+  );
+
+  if (confirmation !== 'RESET') {
+    return;
+  }
+
   localStorage.removeItem(STORAGE_KEY);
 
   setHoleData([]);
@@ -233,7 +244,7 @@ const getHoleEntry = (
   />
 
   <h1 className="text-3xl md:text-4xl font-bold">
-    KS Golf Championship
+    KS Golf Championship 2026
   </h1>
 
   <div className="mt-4 flex gap-2 flex-wrap justify-center">
@@ -268,7 +279,7 @@ const getHoleEntry = (
 
         <div className="grid md:grid-cols-4 gap-4">
           <div className="md:col-span-4 bg-white rounded-2xl shadow p-4">
-            <h2 className="text-2xl font-bold mb-4">Live Leaderboard</h2>
+            <h2 className="text-2xl font-bold mb-4">Tulostaulukko</h2>
 
             <div className="grid md:grid-cols-4 gap-4">
               <div className="border rounded-2xl p-4">
@@ -379,14 +390,14 @@ const getHoleEntry = (
   }}
   className={`rounded-xl p-3 text-sm font-semibold ${
     (
+  fairwayHits[
+    `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
+  ] ??
   getHoleEntry(
     player,
     round,
     currentHoles[`${player}-${round}`] || 1
-  )?.fairwayHit ??
-  fairwayHits[
-    `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
-  ]
+  )?.fairwayHit
 )
       ? 'bg-green-600 text-white'
       : 'bg-zinc-300'
@@ -453,16 +464,14 @@ const getHoleEntry = (
     }));
   }}
   className={`rounded-xl p-3 text-sm font-semibold ${
-  (
-    getHoleEntry(
-      player,
-      round,
-      currentHoles[`${player}-${round}`] || 1
-    )?.threePlusPutts ??
-    threePutts[
-      `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
-    ]
-  )
+  threePutts[
+  `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
+] ??
+getHoleEntry(
+  player,
+  round,
+  currentHoles[`${player}-${round}`] || 1
+)?.threePlusPutts
     ? 'bg-green-700 text-white'
     : 'bg-green-200'
 }`}
@@ -480,16 +489,14 @@ const getHoleEntry = (
     }));
   }}
   className={`rounded-xl p-3 text-sm font-semibold ${
-  (
-    getHoleEntry(
-      player,
-      round,
-      currentHoles[`${player}-${round}`] || 1
-    )?.par3Gir ??
-    par3GirHits[
-      `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
-    ]
-  )
+  par3GirHits[
+  `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
+] ??
+getHoleEntry(
+  player,
+  round,
+  currentHoles[`${player}-${round}`] || 1
+)?.par3Gir
     ? 'bg-blue-700 text-white'
     : 'bg-blue-200'
 }`}
