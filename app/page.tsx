@@ -25,6 +25,9 @@ const [threePutts, setThreePutts] = useState<
 const [par3GirHits, setPar3GirHits] = useState<
   Record<string, boolean>
 >({});
+const [par3Holes, setPar3Holes] = useState<
+  Record<string, boolean>
+>({});
 const [currentHoles, setCurrentHoles] = useState<
   Record<string, number>
 >({});
@@ -50,27 +53,37 @@ const [selectedRound, setSelectedRound] = useState(1);
   
 
   const newEntry = {
-    player,
-    round,
-    hole,
-    holeType: 'normal',
-    fairwayHit:
-  fairwayHits[
-    `${player}-${round}-${hole}`
-  ] ?? false,
-    bunkerShots:
-  bunkerCounts[
-    `${player}-${round}-${hole}`
-  ] ?? 0,
-    threePlusPutts:
-  threePutts[
-    `${player}-${round}-${hole}`
-  ] || false,
-    par3Gir:
-  par3GirHits[
-    `${player}-${round}-${hole}`
-  ] || false,
-  };
+  player,
+  round,
+  hole,
+
+  holeType: 'normal',
+
+  par3Hole:
+    par3Holes[
+      `${player}-${round}-${hole}`
+    ] ?? false,
+
+  fairwayHit:
+    fairwayHits[
+      `${player}-${round}-${hole}`
+    ] ?? false,
+
+  bunkerShots:
+    bunkerCounts[
+      `${player}-${round}-${hole}`
+    ] ?? 0,
+
+  threePlusPutts:
+    threePutts[
+      `${player}-${round}-${hole}`
+    ] || false,
+
+  par3Gir:
+    par3GirHits[
+      `${player}-${round}-${hole}`
+    ] || false,
+};
 
   const filteredData = holeData.filter(
   (h) =>
@@ -139,9 +152,9 @@ setCurrentHoles((prev) => ({
 const calculateLeaderboard = () => {
   return players.map((player) => {
     const playerData = holeData.filter((h) => h.player === player);
-
+const holesPlayed = playerData.length;
    const fairwayHoles = playerData.filter(
-  (h) => h.fairwayHit !== undefined
+  (h) => !h.par3Hole
 );
 
 const fairwayHits = fairwayHoles.filter(
@@ -164,21 +177,34 @@ const fairwayPct =
       (h) => h.threePlusPutts
     ).length;
 
-    const par3Gir = playerData.filter(
-      (h) => h.par3Gir
-    ).length;
+    const par3HolesPlayed = playerData.filter(
+  (h) => h.par3Hole
+);
 
-    return {
-      player,
-      fairwayPct,
-      bunkerShots,
-      threePutts,
-      par3Gir,
-    };
+const par3GirHits = par3HolesPlayed.filter(
+  (h) => h.par3Gir
+).length;
+
+const par3GirPct =
+  par3HolesPlayed.length > 0
+    ? Math.round(
+        (par3GirHits / par3HolesPlayed.length) * 100
+      )
+    : 0;
+
+return {
+  player,
+  holesPlayed,
+  fairwayPct,
+  bunkerShots,
+  threePutts,
+  par3GirPct,
+};
   });
 };
 
 const leaderboard = calculateLeaderboard();
+
 const getHoleEntry = (
   player: string,
   round: number,
@@ -292,7 +318,7 @@ const getHoleEntry = (
                       key={p.player}
                       className="flex justify-between py-1 text-sm"
                     >
-                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player}
+                       {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player} ({p.holesPlayed}/72)
                       <span>{p.fairwayPct}%</span>
                     </div>
                   ))}
@@ -308,7 +334,7 @@ const getHoleEntry = (
                       key={p.player}
                       className="flex justify-between py-1 text-sm"
                     >
-                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player}
+                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player} ({p.holesPlayed}/72)
                       <span>{p.bunkerShots}</span>
                     </div>
                   ))}
@@ -324,7 +350,7 @@ const getHoleEntry = (
                       key={p.player}
                       className="flex justify-between py-1 text-sm"
                     >
-                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player}
+                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player} ({p.holesPlayed}/72)
                       <span>{p.threePutts}</span>
                     </div>
                   ))}
@@ -334,14 +360,14 @@ const getHoleEntry = (
                 <h3 className="font-bold text-lg">⛳ Pin Seeker</h3>
 
                 {[...leaderboard]
-  .sort((a, b) => b.par3Gir - a.par3Gir)
+  .sort((a, b) => b.par3GirPct - a.par3GirPct)
   .map((p, index) => (
                     <div
                       key={p.player}
                       className="flex justify-between py-1 text-sm"
                     >
-                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player}
-                      <span>{p.par3Gir}</span>
+                      {['🏆', '😄', '🙂', '🙁', '🥲'][index]} {p.player} ({p.holesPlayed}/72)
+                      <span>{p.par3GirPct}%</span>
                     </div>
                   ))}
               </div>
@@ -404,6 +430,25 @@ const getHoleEntry = (
   }`}
 >
   Fairway Finder
+</button>
+<button
+  onClick={() => {
+    const key = `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`;
+
+    setPar3Holes((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  }}
+  className={`rounded-xl p-3 text-sm font-semibold ${
+    par3Holes[
+      `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
+    ]
+      ? 'bg-purple-700 text-white'
+      : 'bg-purple-200'
+  }`}
+>
+  Par 3 Hole
 </button>
 
                     <div className="bg-yellow-200 rounded-xl p-3 text-sm space-y-2">
