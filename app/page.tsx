@@ -138,6 +138,7 @@ setCurrentHoles((prev) => ({
   setFairwayHits({});
   setThreePutts({});
   setPar3GirHits({});
+  setPar3Holes({});
   setCurrentHoles({});
 
   setSavedMessage('All round data reset');
@@ -276,16 +277,28 @@ const getHoleEntry = (
   <div className="mt-4 flex gap-2 flex-wrap justify-center">
   {rounds.map((round) => (
     <button
-      key={round}
-      onClick={() => setSelectedRound(round)}
-      className={`px-4 py-2 rounded-xl text-sm font-semibold ${
-        selectedRound === round
-          ? 'bg-zinc-900 text-white'
-          : 'bg-white border'
-      }`}
-    >
-      Kierros {round}
-    </button>
+  key={round}
+  onClick={() => setSelectedRound(round)}
+  className={`px-4 py-2 rounded-xl text-sm font-semibold ${
+    selectedRound === round
+      ? 'bg-zinc-900 text-white'
+      : 'bg-white border'
+  }`}
+>
+  {(() => {
+    const holesInRound = holeData.filter(
+      (h) =>
+        h.player === selectedPlayer &&
+        h.round === round
+    ).length;
+
+    return holesInRound === 18
+      ? `Kierros ${round} ✅`
+      : holesInRound > 0
+      ? `Kierros ${round} (${holesInRound}/18)`
+      : `Kierros ${round}`;
+  })()}
+</button>
   ))}
 </div>
           <div className="flex gap-2 mt-3 flex-wrap">
@@ -580,10 +593,18 @@ getHoleEntry(
     <span>Kierroksen edistyminen</span>
 
     <span>
-  {(currentHoles[`${player}-${round}`] || 1) >= 18
+  {holeData.filter(
+    (h) =>
+      h.player === player &&
+      h.round === round
+  ).length >= 18
     ? '✅ Kierros valmis'
-    : `Hole ${
-        currentHoles[`${player}-${round}`] || 1
+    : `${
+        holeData.filter(
+          (h) =>
+            h.player === player &&
+            h.round === round
+        ).length
       } / 18`}
 </span>
   </div>
@@ -593,9 +614,14 @@ getHoleEntry(
       className="bg-green-600 h-full transition-all"
       style={{
         width: `${
-          ((currentHoles[`${player}-${round}`] || 1) / 18) *
-          100
-        }%`,
+  (
+    holeData.filter(
+      (h) =>
+        h.player === player &&
+        h.round === round
+    ).length / 18
+  ) * 100
+}%`,
       }}
     ></div>
   </div>
