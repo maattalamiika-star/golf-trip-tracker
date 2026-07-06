@@ -184,7 +184,24 @@ setCurrentHoles((prev) => ({
   if (confirmation !== 'RESET') {
     return;
   }
+const clearSupabase = async () => {
+  const { error } = await supabase
+    .from('hole_data')
+    .delete()
+    .neq('id', 0);
 
+  if (error) {
+    console.error(
+      'SUPABASE RESET ERROR:',
+      error
+    );
+    return;
+  }
+
+  console.log('SUPABASE RESET OK');
+};
+
+clearSupabase();
   localStorage.removeItem(STORAGE_KEY);
 
   setHoleData([]);
