@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-
+import { supabase } from '../lib/supabase';
 export default function GolfTripSidegamesTracker() {
   const players = ['Juho', 'Niko', 'Harri', 'Aleksi', 'Mäde'];
   const rounds = [1, 2, 3, 4];
@@ -44,7 +44,40 @@ const [selectedRound, setSelectedRound] = useState(1);
       );
     }
   }, []);
+useEffect(() => {
+  const loadHoleData = async () => {
+    const { data, error } = await supabase
+      .from('hole_data')
+      .select('*');
 
+    if (error) {
+      console.error('SUPABASE LOAD ERROR:', error);
+      return;
+    }
+
+    const formattedData =
+      data?.map((row) => ({
+        player: row.player,
+        round: row.round,
+        hole: row.hole,
+        par3Hole: row.par3_hole,
+        fairwayHit: row.fairway_hit,
+        bunkerShots: row.bunker_shots,
+        threePlusPutts: row.three_plus_putts,
+        par3Gir: row.par3_gir,
+      })) ?? [];
+
+    setHoleData(formattedData);
+
+    console.log(
+      'SUPABASE LOAD OK:',
+      formattedData.length,
+      'rows'
+    );
+  };
+
+  loadHoleData();
+}, []);
   const saveHoleData = (
   player: string,
   round: number,
@@ -98,7 +131,28 @@ const updatedData = [
   ...filteredData,
   newEntry,
 ];
+const saveToSupabase = async () => {
+  const { error } = await supabase
+    .from('hole_data')
+    .upsert({
+      player: newEntry.player,
+      round: newEntry.round,
+      hole: newEntry.hole,
+      par3_hole: newEntry.par3Hole,
+      fairway_hit: newEntry.fairwayHit,
+      bunker_shots: newEntry.bunkerShots,
+      three_plus_putts: newEntry.threePlusPutts,
+      par3_gir: newEntry.par3Gir,
+    });
 
+  if (error) {
+    console.error('SUPABASE SAVE ERROR:', error);
+  } else {
+    console.log('SUPABASE SAVE OK');
+  }
+};
+
+saveToSupabase();
   setHoleData(updatedData);
 setCurrentHoles((prev) => ({
   ...prev,
