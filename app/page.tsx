@@ -68,15 +68,15 @@ useEffect(() => {
       })) ?? [];
 
     setHoleData(formattedData);
-
-    console.log(
-      'SUPABASE LOAD OK:',
-      formattedData.length,
-      'rows'
-    );
   };
 
   loadHoleData();
+
+  const interval = setInterval(() => {
+    loadHoleData();
+  }, 30000);
+
+  return () => clearInterval(interval);
 }, []);
   const saveHoleData = (
   player: string,
