@@ -143,8 +143,9 @@ const updatedData = [
 ];
 const saveToSupabase = async () => {
   const { error } = await supabase
-    .from('hole_data')
-    .upsert({
+  .from('hole_data')
+  .upsert(
+    {
       player: newEntry.player,
       round: newEntry.round,
       hole: newEntry.hole,
@@ -153,7 +154,11 @@ const saveToSupabase = async () => {
       bunker_shots: newEntry.bunkerShots,
       three_plus_putts: newEntry.threePlusPutts,
       par3_gir: newEntry.par3Gir,
-    });
+    },
+    {
+      onConflict: 'player,round,hole',
+    }
+  );
 
   if (error) {
     console.error('SUPABASE SAVE ERROR:', error);
