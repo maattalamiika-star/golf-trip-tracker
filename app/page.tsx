@@ -108,16 +108,26 @@ useEffect(() => {
     ] ?? 0,
 
   threePlusPutts:
-    threePutts[
-      `${player}-${round}-${hole}`
-    ] || false,
+  threePutts[
+    `${player}-${round}-${hole}`
+  ] ??
+  getHoleEntry(
+    player,
+    round,
+    hole
+  )?.threePlusPutts ??
+  false,
 
   par3Gir:
     par3GirHits[
       `${player}-${round}-${hole}`
     ] || false,
 };
-
+console.log(
+  'SAVE TEST',
+  `${player}-${round}-${hole}`,
+  threePutts[`${player}-${round}-${hole}`]
+);
   const filteredData = holeData.filter(
   (h) =>
     !(
@@ -585,25 +595,37 @@ const getHoleEntry = (
 
                     <button
   onClick={() => {
-    const key = `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`;
+    const currentHole =
+      currentHoles[`${player}-${round}`] || 1;
+
+    const key = `${player}-${round}-${currentHole}`;
+
+    const currentValue =
+      threePutts[key] ??
+      getHoleEntry(
+        player,
+        round,
+        currentHole
+      )?.threePlusPutts ??
+      false;
 
     setThreePutts((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      [key]: !currentValue,
     }));
   }}
   className={`rounded-xl p-3 text-sm font-semibold ${
-  threePutts[
-  `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
-] ??
-getHoleEntry(
-  player,
-  round,
-  currentHoles[`${player}-${round}`] || 1
-)?.threePlusPutts
-    ? 'bg-green-700 text-white'
-    : 'bg-green-200'
-}`}
+    threePutts[
+      `${player}-${round}-${currentHoles[`${player}-${round}`] || 1}`
+    ] ??
+    getHoleEntry(
+      player,
+      round,
+      currentHoles[`${player}-${round}`] || 1
+    )?.threePlusPutts
+      ? 'bg-green-700 text-white'
+      : 'bg-green-200'
+  }`}
 >
   3+ Putts
 </button>
