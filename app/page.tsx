@@ -11,6 +11,8 @@ export default function GolfTripSidegamesTracker() {
   
 
   const STORAGE_KEY = 'golf-trip-sidegames-data';
+  const PLAYER_KEY = 'golf-selected-player';
+const ROUND_KEY = 'golf-selected-round';
 
   const [savedMessage, setSavedMessage] = useState('');
 const [bunkerCounts, setBunkerCounts] = useState<
@@ -33,17 +35,31 @@ const [currentHoles, setCurrentHoles] = useState<
 >({});
 const [selectedRound, setSelectedRound] = useState(1);
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (!saved) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          updated: new Date().toISOString(),
-        })
-      );
-    }
-  }, []);
+  if (!saved) {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        updated: new Date().toISOString(),
+      })
+    );
+  }
+
+  const savedPlayer =
+    localStorage.getItem(PLAYER_KEY);
+
+  if (savedPlayer) {
+    setSelectedPlayer(savedPlayer);
+  }
+
+  const savedRound =
+    localStorage.getItem(ROUND_KEY);
+
+  if (savedRound) {
+    setSelectedRound(Number(savedRound));
+  }
+}, []);
 useEffect(() => {
   const loadHoleData = async () => {
     const { data, error } = await supabase
@@ -313,16 +329,23 @@ const getHoleEntry = (
   </label>
 
   <select
-    value={selectedPlayer}
-    onChange={(e) => setSelectedPlayer(e.target.value)}
-    className="w-full border rounded-xl p-3"
-  >
-    {players.map((player) => (
-      <option key={player} value={player}>
-        {player}
-      </option>
-    ))}
-  </select>
+  value={selectedPlayer}
+  onChange={(e) => {
+    setSelectedPlayer(e.target.value);
+
+    localStorage.setItem(
+      PLAYER_KEY,
+      e.target.value
+    );
+  }}
+  className="w-full border rounded-xl p-3"
+>
+  {players.map((player) => (
+    <option key={player} value={player}>
+      {player}
+    </option>
+  ))}
+</select>
 </div>
         <div className="flex flex-wrap gap-3 justify-between items-center bg-white rounded-2xl shadow p-4">
           <div>
@@ -362,9 +385,16 @@ const getHoleEntry = (
 
   <div className="mt-4 flex gap-2 flex-wrap justify-center">
   {rounds.map((round) => (
-    <button
+   <button
   key={round}
-  onClick={() => setSelectedRound(round)}
+  onClick={() => {
+    setSelectedRound(round);
+
+    localStorage.setItem(
+      ROUND_KEY,
+      round.toString()
+    );
+  }}
   className={`px-4 py-2 rounded-xl text-sm font-semibold ${
     selectedRound === round
       ? 'bg-zinc-900 text-white'
