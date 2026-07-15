@@ -13,7 +13,7 @@ export default function GolfTripSidegamesTracker() {
   const STORAGE_KEY = 'golf-trip-sidegames-data';
   const PLAYER_KEY = 'golf-selected-player';
 const ROUND_KEY = 'golf-selected-round';
-
+const HOLES_KEY = 'golf-current-holes';
   const [savedMessage, setSavedMessage] = useState('');
 const [bunkerCounts, setBunkerCounts] = useState<
   Record<string, number>
@@ -34,7 +34,8 @@ const [currentHoles, setCurrentHoles] = useState<
   Record<string, number>
 >({});
 const [selectedRound, setSelectedRound] = useState(1);
-  useEffect(() => {
+
+useEffect(() => {
   const saved = localStorage.getItem(STORAGE_KEY);
 
   if (!saved) {
@@ -59,7 +60,18 @@ const [selectedRound, setSelectedRound] = useState(1);
   if (savedRound) {
     setSelectedRound(Number(savedRound));
   }
+
+  const savedHoles =
+    localStorage.getItem(HOLES_KEY);
+
+  if (savedHoles) {
+    setCurrentHoles(
+      JSON.parse(savedHoles)
+    );
+  }
+
 }, []);
+
 useEffect(() => {
   const loadHoleData = async () => {
     const { data, error } = await supabase
@@ -185,10 +197,22 @@ const saveToSupabase = async () => {
 
 saveToSupabase();
   setHoleData(updatedData);
-setCurrentHoles((prev) => ({
-  ...prev,
-  [`${player}-${round}`]: Math.min(hole + 1, 18),
-}));
+setCurrentHoles((prev) => {
+  const updatedHoles = {
+    ...prev,
+    [`${player}-${round}`]: Math.min(
+      hole + 1,
+      18
+    ),
+  };
+
+  localStorage.setItem(
+    HOLES_KEY,
+    JSON.stringify(updatedHoles)
+  );
+
+  return updatedHoles;
+});
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify(updatedData)
@@ -332,7 +356,10 @@ const getHoleEntry = (
   value={selectedPlayer}
   onChange={(e) => {
     setSelectedPlayer(e.target.value);
-
+console.log(
+  'SELECTED PLAYER:',
+  e.target.value
+);
     localStorage.setItem(
       PLAYER_KEY,
       e.target.value
@@ -701,11 +728,20 @@ getHoleEntry(
     currentHoles[`${player}-${round}`] || 1
   }
   onChange={(e) => {
-    setCurrentHoles((prev) => ({
+  setCurrentHoles((prev) => {
+    const updatedHoles = {
       ...prev,
       [`${player}-${round}`]: Number(e.target.value),
-    }));
-  }}
+    };
+
+    localStorage.setItem(
+      HOLES_KEY,
+      JSON.stringify(updatedHoles)
+    );
+
+    return updatedHoles;
+  });
+}}
 >
                         {holes.map((h) => (
                           <option key={h}>{h}</option>
